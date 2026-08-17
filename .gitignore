@@ -27,6 +27,7 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+.claude/
 
 # Environment secrets
 .env
