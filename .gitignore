@@ -1,0 +1,32 @@
+# PhysioNet credentialed data — DUA prohibits redistribution.
+# Raw and processed data must never be committed.
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Tableau extracts often embed row-level data
+tableau/*.hyper
+tableau/*.tde
+tableau/extracts/
+
+# Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment secrets
+.env
