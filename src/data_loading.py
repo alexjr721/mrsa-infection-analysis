@@ -57,19 +57,34 @@ def load_processed(name: str) -> pd.DataFrame:
     return pd.read_csv(PROCESSED_DIR / name)
 
 
-def drop_zero_variance(df: pd.DataFrame, cols: list, verbose: bool = True) -> list:
-    """Return `cols` minus any with zero variance in `df`.
+def drop_zero_variance(
+    df: pd.DataFrame, cols: list, outcome_col: str = None, verbose: bool = True
+) -> list:
+    """Return `cols` minus any that are constant overall, or constant within
+    one level of `outcome_col`.
 
     In the MRSA subsets, some antibiotic classes (e.g. carbapenem) have no
-    exposed patients at all, which produces undefined correlations and
-    singular design matrices if left in. Drop them and say why, rather than
-    letting downstream stats calls silently emit NaN/inf.
+    exposed patients at all -- constant overall, which produces undefined
+    correlations and singular design matrices if left in.
+
+    Others (e.g. anti_staph_beta_lactam) aren't constant overall but *are*
+    constant within the case group (zero exposed cases, a handful of exposed
+    controls) -- this still causes quasi-complete separation in a logistic
+    regression: the MLE coefficient runs off to +/-infinity with an enormous
+    standard error even though the optimizer may report "converged". Pass
+    `outcome_col` to catch this too.
     """
     kept = []
     for c in cols:
         if df[c].var() == 0:
             if verbose:
                 print(f"Dropping '{c}': zero variance in this subset (no exposed cases).")
-        else:
-            kept.append(c)
+            continue
+        if outcome_col is not None:
+            group_vars = df.groupby(outcome_col)[c].var()
+            if (group_vars == 0).any():
+                if verbose:
+                    print(f"Dropping '{c}': constant within one outcome group (separation risk).")
+                continue
+        kept.append(c)
     return kept

@@ -10,6 +10,10 @@ tableau/*.hyper
 tableau/*.tde
 tableau/extracts/
 
+# Pickled statsmodels results embed the fitted design matrix (derived
+# row-level data) -- keep local only. Figures (reports/figures/) are fine.
+reports/*.pkl
+
 # Jupyter
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
