@@ -1,0 +1,824 @@
+<title>Colonization vs. Exposure</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #F3F6F5;
+    --surface:     #FBFDFC;
+    --surface-2:   #EFF4F2;
+    --ink:         #0E1B19;
+    --ink-2:       #4B5B58;
+    --ink-muted:   #7E8F8B;
+    --border:      rgba(14,27,25,0.10);
+    --border-2:    rgba(14,27,25,0.16);
+    --grid:        #E3EAE8;
+    --axis:        #C7D3D0;
+    --teal:        #0D9488;
+    --teal-wash:   rgba(13,148,136,0.10);
+    --teal-dim:    #7FADA7;
+    --orange:      #EB6834;
+    --red:         #E34948;
+    --red-dim:     #C79695;
+    --shadow:      0 1px 2px rgba(14,27,25,0.04), 0 8px 24px -12px rgba(14,27,25,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0B1413;
+      --surface:     #12211F;
+      --surface-2:   #172725;
+      --ink:         #EDF2F0;
+      --ink-2:       #A9BDB8;
+      --ink-muted:   #86A39D;
+      --border:      rgba(237,242,240,0.10);
+      --border-2:    rgba(237,242,240,0.16);
+      --grid:        #24302E;
+      --axis:        #35443F;
+      --teal:        #12A094;
+      --teal-wash:   rgba(18,160,148,0.14);
+      --teal-dim:    #4E7873;
+      --orange:      #D95926;
+      --red:         #E66767;
+      --red-dim:     #8A5352;
+      --shadow:      0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0B1413;
+    --surface:     #12211F;
+    --surface-2:   #172725;
+    --ink:         #EDF2F0;
+    --ink-2:       #A9BDB8;
+    --ink-muted:   #86A39D;
+    --border:      rgba(237,242,240,0.10);
+    --border-2:    rgba(237,242,240,0.16);
+    --grid:        #24302E;
+    --axis:        #35443F;
+    --teal:        #12A094;
+    --teal-wash:   rgba(18,160,148,0.14);
+    --teal-dim:    #4E7873;
+    --orange:      #D95926;
+    --red:         #E66767;
+    --red-dim:     #8A5352;
+    --shadow:      0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  .serif { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  .mono  { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+  .tab   { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  /* ---------- header ---------- */
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--teal);
+  }
+  h1 {
+    font-size: clamp(30px, 4.4vw, 44px);
+    line-height: 1.12;
+    margin: 10px 0 14px;
+    font-weight: 500;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .dek {
+    max-width: 62ch;
+    font-size: 17px;
+    color: var(--ink-2);
+    margin: 0 0 22px;
+  }
+  .provenance {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--ink-muted);
+  }
+  .provenance a { color: var(--ink-2); }
+  .provenance a:hover { color: var(--teal); }
+
+  /* ---------- section chrome ---------- */
+  section { margin-top: 64px; }
+  .section-head { max-width: 68ch; margin-bottom: 22px; }
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .section-dek { font-size: 15px; color: var(--ink-2); margin: 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 28px 28px 20px;
+  }
+  .footnote {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    margin: 14px 2px 0;
+    line-height: 1.55;
+  }
+
+  /* ---------- stat comparison ---------- */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 620px) { .stat-grid { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .stat-card.emphasis { border-color: var(--teal); border-width: 1.5px; }
+  .stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+  .stat-card.emphasis .stat-label { color: var(--teal); }
+  .stat-value {
+    font-size: 48px;
+    font-weight: 600;
+    margin: 6px 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .stat-sub { font-size: 13.5px; color: var(--ink-2); }
+  .auc-strip { margin-top: 18px; }
+  .auc-strip svg { display: block; width: 100%; height: auto; }
+
+  /* ---------- charts ---------- */
+  .chart-svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis-label { font-size: 11px; fill: var(--ink-muted); font-family: inherit; }
+  .value-label { font-size: 12px; fill: var(--ink); font-weight: 600; font-family: inherit; }
+  .legend { display: flex; gap: 20px; margin-bottom: 14px; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .legend-swatch { width: 14px; height: 3px; border-radius: 2px; }
+  .legend-swatch.dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* ---------- tooltip ---------- */
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+    background: var(--ink);
+    color: var(--page);
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.1s ease;
+    max-width: 260px;
+  }
+  #tooltip.show { opacity: 1; }
+  #tooltip .tt-title { font-weight: 600; margin-bottom: 3px; }
+  #tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; }
+  #tooltip .tt-row .tt-key { opacity: 0.75; }
+  #tooltip .tt-row .tt-val { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  /* ---------- tables ---------- */
+  details.tv { margin-top: 14px; }
+  details.tv summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+    font-weight: 500;
+    user-select: none;
+  }
+  details.tv summary:hover { color: var(--teal); }
+  .table-scroll { overflow-x: auto; margin-top: 12px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: right;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; font-variant-numeric: normal; white-space: normal; }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+  tbody tr:hover { background: var(--surface-2); }
+
+  /* ---------- forest plot rows ---------- */
+  .forest-panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 26px 0 4px;
+  }
+  .forest-panel-title:first-child { margin-top: 4px; }
+  .forest-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 10px; }
+
+  /* ---------- footer ---------- */
+  footer {
+    margin-top: 76px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  footer h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  footer p { font-size: 13.5px; color: var(--ink-2); max-width: 74ch; margin: 0 0 22px; }
+  footer ul { margin: 0 0 22px; padding-left: 20px; font-size: 13.5px; color: var(--ink-2); max-width: 72ch; }
+  footer li { margin-bottom: 6px; }
+  footer .fine {
+    font-size: 12px;
+    color: var(--ink-muted);
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  footer .fine a { color: var(--ink-2); }
+
+  a { color: var(--teal); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">PhysioNet Hospital-Onset Infection Cohort &middot; MRSA</div>
+    <h1 class="serif">Colonization pressure vs. antibiotic exposure</h1>
+    <p class="dek">Two matched case-control cohorts, drawn from the same Mass General Brigham dataset, isolate different candidate drivers of hospital-onset MRSA: a ward's colonization pressure (environmental analysis) versus a patient's own antibiotic exposure history (patient analysis). This dashboard compares what each actually predicts.</p>
+    <div class="provenance">
+      <span>Wei, Sagers, McKenna et al. (2025), PhysioNet <a href="https://doi.org/10.13026/k70x-0m81" target="_blank" rel="noopener">10.13026/k70x-0m81</a></span>
+      <span>Code &amp; notebooks: <a href="https://github.com/alexjr721/mrsa-infection-analysis" target="_blank" rel="noopener">github.com/alexjr721/mrsa-infection-analysis</a></span>
+      <span>Figures below are aggregate exports only &mdash; no row-level data (PhysioNet DUA)</span>
+    </div>
+  </header>
+
+  <!-- ============================================================ HEADLINE -->
+  <section id="headline">
+    <div class="section-head">
+      <h2>Which model actually predicts acquisition?</h2>
+      <p class="section-dek">Held-out test AUC, logistic regression, each model's own predictor set.</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Environmental model</div>
+        <div class="stat-value tab" style="color:var(--ink-2)">0.534</div>
+        <div class="stat-sub">colonization pressure &middot; n = 3,498 &middot; barely above chance</div>
+      </div>
+      <div class="stat-card emphasis">
+        <div class="stat-label">Patient model</div>
+        <div class="stat-value tab" style="color:var(--teal)">0.637</div>
+        <div class="stat-sub">antibiotic exposure, age/sex-adjusted &middot; n = 3,758</div>
+      </div>
+    </div>
+    <div class="card auc-strip">
+      <div id="aucChart"></div>
+      <p class="footnote">Reading this chart: most of the patient model's edge traces to <strong>age and sex</strong>, not the antibiotic classes themselves &mdash; see the odds-ratio panel below. That's expected: the patient cohort, unlike the environmental one, wasn't matched on age or sex.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ CP DECILE -->
+  <section id="cp">
+    <div class="section-head">
+      <h2>Ward colonization pressure</h2>
+      <p class="section-dek">MRSA acquisition rate by decile of ward-level MRSA colonization pressure at time of entry (environmental cohort, n = 3,498).</p>
+    </div>
+    <div class="card">
+      <div id="cpChart"></div>
+      <p class="footnote">The line sits close to flat across deciles (29&ndash;34%) &mdash; there is no strong unadjusted dose-response trend. That's consistent with the regression finding: after adjusting for the other colonization-pressure variables, surgery, and comorbidity burden, MRSA_cp is a real but modest predictor (adjusted OR 1.069, 95% CI 1.016&ndash;1.124) &mdash; a small effect this bivariate view isn't built to show on its own.</p>
+      <details class="tv">
+        <summary>Show data table</summary>
+        <div class="table-scroll">
+          <table id="cpTable"></table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============================================================ ANTIBIOTIC EXPOSURE -->
+  <section id="abx">
+    <div class="section-head">
+      <h2>Prior antibiotic exposure</h2>
+      <p class="section-dek">MRSA acquisition rate by prior 60-day antibiotic-class exposure, exposed vs. unexposed (patient cohort, n = 3,758).</p>
+    </div>
+    <div class="card">
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--teal)"></span>Exposed</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--ink-muted)"></span>Unexposed</div>
+      </div>
+      <div id="abxChart"></div>
+      <p class="footnote">Several classes have single-digit exposed counts in this subset (anti-staphylococcal &beta;-lactams: 4; anti-anaerobes / extended-spectrum cephalosporins: 7) &mdash; treat those bars as noisy, not reliable signal. Carbapenem isn't shown: zero patients in this MRSA subset received one.</p>
+      <details class="tv">
+        <summary>Show data table</summary>
+        <div class="table-scroll">
+          <table id="abxTable"></table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============================================================ FOREST PLOT -->
+  <section id="forest">
+    <div class="section-head">
+      <h2>Adjusted odds ratios</h2>
+      <p class="section-dek">Each predictor's adjusted odds ratio with 95% CI, from the two logistic regression models. Marks left of the OR&nbsp;=&nbsp;1 line are protective, right are risk-increasing; the CI crossing 1 means the effect isn't statistically distinguishable from none at &alpha;&nbsp;=&nbsp;0.05 (shown muted).</p>
+    </div>
+    <div class="card">
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch dot" style="background:var(--red)"></span>Increases risk (significant)</div>
+        <div class="legend-item"><span class="legend-swatch dot" style="background:var(--teal)"></span>Protective (significant)</div>
+        <div class="legend-item"><span class="legend-swatch dot" style="background:var(--ink-muted)"></span>CI crosses 1 (not significant)</div>
+      </div>
+      <div class="forest-panel-title">Environmental model</div>
+      <div class="forest-sub">Colonization pressure (9 organisms) + prior surgery + comorbidity index</div>
+      <div id="forestEnv"></div>
+      <div class="forest-panel-title">Patient model</div>
+      <div class="forest-sub">Antibiotic class exposure (12 classes) + comorbidity index + age + sex, adjusted</div>
+      <div id="forestPat"></div>
+      <details class="tv">
+        <summary>Show data table</summary>
+        <div class="table-scroll">
+          <table id="forestTable"></table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============================================================ COHORT SUMMARY -->
+  <section id="cohort">
+    <div class="section-head">
+      <h2>Cohort summary</h2>
+      <p class="section-dek">Sample sizes and demographics for each matched cohort, case vs. control.</p>
+    </div>
+    <div class="card">
+      <div class="table-scroll">
+        <table id="cohortTable"></table>
+      </div>
+      <p class="footnote">Age is balanced between case and control in the environmental cohort (matched on age &plusmn;5y) but diverges in the patient cohort &mdash; control mean age (66.3) runs about 4 years above case mean age (62.3), consistent with that cohort not being matched on demographics.</p>
+    </div>
+  </section>
+
+  <footer>
+    <h3>Methodology</h3>
+    <p>Matched retrospective case-control design across Mass General Brigham inpatient admissions, May 2015&ndash;July 2024. The <strong>environmental</strong> cohort matches controls to cases on age, sex, prior surgery, room length-of-stay, and antibiotic exposure history &mdash; isolating the effect of ward-level colonization pressure. The <strong>patient</strong> cohort instead matches on hospital ward, admission month/year, and room length-of-stay &mdash; isolating the effect of a patient's own antibiotic exposure, at the cost of leaving age/sex unmatched (hence the explicit adjustment in that model).</p>
+    <h3>Caveats</h3>
+    <ul>
+      <li>The two cohorts differ in matching design and composition, so the AUC comparison above is directional, not strictly apples-to-apples.</li>
+      <li>In the patient model, age and sex are the dominant, most significant terms &mdash; most individual antibiotic-class coefficients are not statistically significant on their own.</li>
+      <li>Pseudo-R&sup2; is small in both models (environmental 0.007, patient 0.030 adjusted) &mdash; these predictors explain only a modest share of who acquires MRSA.</li>
+    </ul>
+    <div class="fine">
+      Analysis code, notebooks, and full write-up: <a href="https://github.com/alexjr721/mrsa-infection-analysis" target="_blank" rel="noopener">github.com/alexjr721/mrsa-infection-analysis</a>. Dataset is PhysioNet credentialed-access under a Data Use Agreement &mdash; all figures here are pre-aggregated exports; no row-level patient data is included on this page.
+    </div>
+  </footer>
+
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------- data
+  var CP_DECILE = [
+    {decile:0, n:1050, rate:0.317143, cp:0.199624},
+    {decile:1, n:349,  rate:0.289398, cp:0.885548},
+    {decile:2, n:350,  rate:0.300000, cp:1.396625},
+    {decile:3, n:350,  rate:0.300000, cp:1.833267},
+    {decile:4, n:349,  rate:0.332378, cp:2.445800},
+    {decile:5, n:350,  rate:0.308571, cp:3.080034},
+    {decile:6, n:350,  rate:0.337143, cp:3.941581},
+    {decile:7, n:350,  rate:0.328571, cp:5.822920}
+  ];
+
+  var ABX_RATE = [
+    {label:"Glycopeptides",                     nExp:11, rExp:0.363636, nUn:3747, rUn:0.293034},
+    {label:"Lincosamides",                      nExp:6,  rExp:0.333333, nUn:3752, rUn:0.293177},
+    {label:"Macrolides",                        nExp:35, rExp:0.285714, nUn:3723, rUn:0.293312},
+    {label:"Fluoroquinolones",                  nExp:96, rExp:0.270833, nUn:3662, rUn:0.293829},
+    {label:"Extended-spectrum penicillins",     nExp:49, rExp:0.244898, nUn:3709, rUn:0.293880},
+    {label:"Tetracyclines",                     nExp:49, rExp:0.244898, nUn:3709, rUn:0.293880},
+    {label:"Cephalosporins",                    nExp:90, rExp:0.244444, nUn:3668, rUn:0.294438},
+    {label:"Penicillins",                       nExp:23, rExp:0.173913, nUn:3735, rUn:0.293976},
+    {label:"Extended-spectrum cephalosporins",  nExp:7,  rExp:0.142857, nUn:3751, rUn:0.293522},
+    {label:"Anti-anaerobes",                    nExp:7,  rExp:0.142857, nUn:3751, rUn:0.293522},
+    {label:"Anti-C. difficile (oral vanco.)",   nExp:8,  rExp:0.125000, nUn:3750, rUn:0.293600},
+    {label:"Sulfonamides",                      nExp:58, rExp:0.068966, nUn:3700, rUn:0.296757},
+    {label:"Anti-staph. beta-lactams",          nExp:4,  rExp:0.000000, nUn:3754, rUn:0.293554}
+  ];
+
+  var FOREST_ENV = [
+    {label:"MRSA (primary predictor)",                OR:1.068786, lo:1.015935, hi:1.124385},
+    {label:"Vancomycin-resistant Enterococcus",       OR:1.048148, lo:0.987325, hi:1.112718},
+    {label:"Drug-resistant P. aeruginosa",            OR:1.020443, lo:0.950961, hi:1.095001},
+    {label:"Drug-susceptible P. aeruginosa",          OR:1.020391, lo:0.971450, hi:1.071797},
+    {label:"Elixhauser comorbidity index",            OR:1.004733, lo:1.000024, hi:1.009464},
+    {label:"MSSA",                                    OR:0.994564, lo:0.964725, hi:1.025326},
+    {label:"C. difficile",                            OR:0.989352, lo:0.935857, hi:1.045905},
+    {label:"Vancomycin-susceptible Enterococcus",     OR:0.986801, lo:0.952791, hi:1.022026},
+    {label:"Drug-susceptible Enterobacterales",       OR:0.980872, lo:0.968086, hi:0.993827},
+    {label:"ESBL Enterobacterales",                   OR:0.975001, lo:0.943125, hi:1.007955},
+    {label:"Prior surgery (90 days)",                 OR:0.958347, lo:0.763985, hi:1.202157}
+  ];
+
+  var FOREST_PAT = [
+    {label:"Sex: male",                         OR:1.835864, lo:1.589002, hi:2.121078},
+    {label:"Glycopeptides",                     OR:1.948137, lo:0.936036, hi:4.054587},
+    {label:"Lincosamides",                      OR:1.095632, lo:0.291353, hi:4.120128},
+    {label:"Fluoroquinolones",                  OR:1.032399, lo:0.831531, hi:1.281790},
+    {label:"Elixhauser comorbidity index",      OR:1.002796, lo:0.998062, hi:1.007552},
+    {label:"Cephalosporins",                    OR:0.923989, lo:0.712233, hi:1.198704},
+    {label:"Anti-C. difficile (oral vanco.)",   OR:0.923846, lo:0.355108, hi:2.403468},
+    {label:"Tetracyclines",                     OR:0.872802, lo:0.622755, hi:1.223249},
+    {label:"Penicillins",                       OR:0.858907, lo:0.451092, hi:1.635411},
+    {label:"Macrolides",                        OR:0.904554, lo:0.620777, hi:1.318054},
+    {label:"Age (per year)",                    OR:0.989490, lo:0.985835, hi:0.993158},
+    {label:"Extended-spectrum penicillins",     OR:0.784116, lo:0.506685, hi:1.213450},
+    {label:"Anti-anaerobes",                    OR:0.410085, lo:0.082526, hi:2.037771},
+    {label:"Extended-spectrum cephalosporins",  OR:0.462239, lo:0.185665, hi:1.150808},
+    {label:"Sulfonamides (folate inhibitors)",  OR:0.244971, lo:0.094212, hi:0.636977}
+  ];
+
+  var COHORT = [
+    {arm:"Environmental", group:"Case",    n:1101, age:58.798183, dur:7.558583},
+    {arm:"Environmental", group:"Control", n:2397, age:57.642011, dur:4.655611},
+    {arm:"Patient",       group:"Case",    n:1102, age:62.289474, dur:7.856534},
+    {arm:"Patient",       group:"Control", n:2656, age:66.307191, dur:4.888517}
+  ];
+
+  // ---------------------------------------------------------------- helpers
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function pct(x, digits) { return (x * 100).toFixed(digits == null ? 1 : digits) + "%"; }
+  function fmt2(x) { return x.toFixed(2); }
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  var tooltip = document.getElementById("tooltip");
+  function showTip(x, y, html) {
+    tooltip.innerHTML = "";
+    var frag = document.createElement("div");
+    frag.innerHTML = html; // built from our own trusted strings only, values via textContent below
+    tooltip.appendChild(frag);
+    tooltip.style.left = x + "px";
+    tooltip.style.top = (y - 10) + "px";
+    tooltip.classList.add("show");
+  }
+  function hideTip() { tooltip.classList.remove("show"); }
+
+  function ttRow(key, val) {
+    var row = document.createElement("div");
+    row.className = "tt-row";
+    var k = document.createElement("span"); k.className = "tt-key"; k.textContent = key;
+    var v = document.createElement("span"); v.className = "tt-val"; v.textContent = val;
+    row.appendChild(k); row.appendChild(v);
+    return row;
+  }
+  function ttTitle(text) {
+    var t = document.createElement("div");
+    t.className = "tt-title";
+    t.textContent = text;
+    return t;
+  }
+  function buildTip(x, y, titleText, rows) {
+    tooltip.innerHTML = "";
+    tooltip.appendChild(ttTitle(titleText));
+    rows.forEach(function (r) { tooltip.appendChild(ttRow(r[0], r[1])); });
+    tooltip.style.left = x + "px";
+    tooltip.style.top = (y - 12) + "px";
+    tooltip.classList.add("show");
+  }
+
+  // ================================================================ AUC STRIP
+  function renderAucStrip() {
+    var host = document.getElementById("aucChart");
+    var W = 1000, H = 110, padL = 16, padR = 16, padT = 30, padB = 34;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, class: "chart-svg", role: "img",
+      "aria-label": "AUC comparison, environmental 0.534 versus patient 0.637, chance is 0.5" });
+    host.appendChild(svg);
+
+    var domainMin = 0.50, domainMax = 0.70;
+    var x0 = padL, x1 = W - padR;
+    function xScale(v) { return x0 + (v - domainMin) / (domainMax - domainMin) * (x1 - x0); }
+
+    var axisY = H - padB;
+    el("line", { x1: x0, x2: x1, y1: axisY, y2: axisY, stroke: css("--axis"), "stroke-width": 1 }, svg);
+
+    [0.50, 0.55, 0.60, 0.65, 0.70].forEach(function (t) {
+      var x = xScale(t);
+      el("line", { x1: x, x2: x, y1: padT - 10, y2: axisY, stroke: css("--grid"), "stroke-width": 1 }, svg);
+      var lab = el("text", { x: x, y: axisY + 18, class: "axis-label", "text-anchor": "middle" }, svg);
+      lab.textContent = t.toFixed(2);
+    });
+
+    var chanceX = xScale(0.50);
+    var chanceLabel = el("text", { x: chanceX, y: padT - 14, class: "axis-label", "text-anchor": "middle" }, svg);
+    chanceLabel.textContent = "chance (0.50)";
+
+    var points = [
+      { key: "env", label: "Environmental", value: 0.533665, color: css("--ink-muted"), rowY: 58 },
+      { key: "pat", label: "Patient", value: 0.637067, color: css("--teal"), rowY: 84 }
+    ];
+
+    points.forEach(function (p) {
+      var x = xScale(p.value);
+      el("line", { x1: chanceX, x2: x, y1: p.rowY, y2: p.rowY, stroke: p.color, "stroke-width": 2,
+        opacity: 0.55, "stroke-linecap": "round" }, svg);
+      var dot = el("circle", { cx: x, cy: p.rowY, r: 6, fill: p.color, stroke: css("--surface"),
+        "stroke-width": 2, style: "cursor:pointer" }, svg);
+      var lbl = el("text", { x: x, y: p.rowY - 12, class: "value-label", "text-anchor": "middle" }, svg);
+      lbl.textContent = p.label + " " + p.value.toFixed(3);
+      lbl.setAttribute("fill", p.color === css("--ink-muted") ? css("--ink-2") : p.color);
+
+      var hit = el("circle", { cx: x, cy: p.rowY, r: 16, fill: "transparent", style: "cursor:pointer" }, svg);
+      function onMove(evt) {
+        buildTip(evt.clientX, evt.clientY, p.label + " model", [
+          ["Test AUC", p.value.toFixed(3)],
+          ["Above chance", "+" + (p.value - 0.5).toFixed(3)]
+        ]);
+      }
+      hit.addEventListener("pointermove", onMove);
+      hit.addEventListener("pointerenter", onMove);
+      hit.addEventListener("pointerleave", hideTip);
+      dot.addEventListener("pointermove", onMove);
+      dot.addEventListener("pointerleave", hideTip);
+    });
+  }
+
+  // ================================================================ CP DECILE LINE
+  function renderCpChart() {
+    var host = document.getElementById("cpChart");
+    var W = 1000, H = 300, padL = 44, padR = 20, padT = 20, padB = 36;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, class: "chart-svg", role: "img",
+      "aria-label": "MRSA acquisition rate by colonization pressure decile" });
+    host.appendChild(svg);
+
+    var x0 = padL, x1 = W - padR, y0 = padT, y1 = H - padB;
+    var yMax = 0.40;
+    function xScale(i) { return x0 + i / (CP_DECILE.length - 1) * (x1 - x0); }
+    function yScale(v) { return y1 - v / yMax * (y1 - y0); }
+
+    [0, 0.10, 0.20, 0.30, 0.40].forEach(function (t) {
+      var y = yScale(t);
+      el("line", { x1: x0, x2: x1, y1: y, y2: y, stroke: css("--grid"), "stroke-width": 1 }, svg);
+      var lab = el("text", { x: x0 - 10, y: y + 4, class: "axis-label", "text-anchor": "end" }, svg);
+      lab.textContent = pct(t, 0);
+    });
+    el("line", { x1: x0, x2: x1, y1: y1, y2: y1, stroke: css("--axis"), "stroke-width": 1 }, svg);
+
+    CP_DECILE.forEach(function (d, i) {
+      var lab = el("text", { x: xScale(i), y: y1 + 20, class: "axis-label", "text-anchor": "middle" }, svg);
+      lab.textContent = "D" + (i + 1);
+    });
+    var xAxisLabel = el("text", { x: (x0 + x1) / 2, y: H - 2, class: "axis-label", "text-anchor": "middle" }, svg);
+    xAxisLabel.textContent = "colonization-pressure decile (D1 = lowest → D8 = highest)";
+
+    var pathD = CP_DECILE.map(function (d, i) {
+      return (i === 0 ? "M" : "L") + xScale(i) + "," + yScale(d.rate);
+    }).join(" ");
+    var areaD = pathD + " L" + xScale(CP_DECILE.length - 1) + "," + y1 + " L" + xScale(0) + "," + y1 + " Z";
+
+    el("path", { d: areaD, fill: css("--teal"), opacity: 0.10 }, svg);
+    el("path", { d: pathD, fill: "none", stroke: css("--teal"), "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+
+    // crosshair
+    var crosshair = el("line", { x1: 0, x2: 0, y1: y0, y2: y1, stroke: css("--axis"),
+      "stroke-width": 1, opacity: 0, "pointer-events": "none" }, svg);
+
+    CP_DECILE.forEach(function (d, i) {
+      var cx = xScale(i), cy = yScale(d.rate);
+      el("circle", { cx: cx, cy: cy, r: 4, fill: css("--teal"), stroke: css("--surface"), "stroke-width": 2 }, svg);
+      var hit = el("rect", {
+        x: cx - (x1 - x0) / (CP_DECILE.length - 1) / 2, y: y0,
+        width: (x1 - x0) / (CP_DECILE.length - 1), height: y1 - y0,
+        fill: "transparent", style: "cursor:crosshair"
+      }, svg);
+      function onMove(evt) {
+        crosshair.setAttribute("x1", cx); crosshair.setAttribute("x2", cx); crosshair.setAttribute("opacity", 1);
+        buildTip(evt.clientX, evt.clientY, "Decile " + (i + 1) + " of 8", [
+          ["Acquisition rate", pct(d.rate)],
+          ["Mean MRSA_cp", d.cp.toFixed(2)],
+          ["n", d.n.toLocaleString()]
+        ]);
+      }
+      hit.addEventListener("pointermove", onMove);
+      hit.addEventListener("pointerenter", onMove);
+      hit.addEventListener("pointerleave", function () { crosshair.setAttribute("opacity", 0); hideTip(); });
+    });
+
+    var tbl = document.getElementById("cpTable");
+    var thead = "<thead><tr><th>Decile</th><th>n</th><th>Acquisition rate</th><th>Mean MRSA_cp</th></tr></thead>";
+    var rows = CP_DECILE.map(function (d, i) {
+      return "<tr><td>D" + (i + 1) + "</td><td>" + d.n.toLocaleString() + "</td><td>" + pct(d.rate) + "</td><td>" + d.cp.toFixed(2) + "</td></tr>";
+    }).join("");
+    tbl.innerHTML = thead + "<tbody>" + rows + "</tbody>";
+  }
+
+  // ================================================================ ANTIBIOTIC BARS
+  function renderAbxChart() {
+    var host = document.getElementById("abxChart");
+    var rows = ABX_RATE.slice().sort(function (a, b) { return b.rExp - a.rExp; });
+    var rowH = 34, labelW = 210, padT = 8, padR = 60;
+    var W = 1000, H = rows.length * rowH + padT + 10;
+    var chartX0 = labelW, chartX1 = W - padR;
+    var xMax = 0.40;
+
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, class: "chart-svg", role: "img",
+      "aria-label": "MRSA acquisition rate by antibiotic class, exposed versus unexposed" });
+    host.appendChild(svg);
+
+    function xScale(v) { return chartX0 + v / xMax * (chartX1 - chartX0); }
+    [0, 0.10, 0.20, 0.30, 0.40].forEach(function (t) {
+      var x = xScale(t);
+      el("line", { x1: x, x2: x, y1: padT, y2: H - 4, stroke: css("--grid"), "stroke-width": 1 }, svg);
+    });
+
+    rows.forEach(function (r, i) {
+      var cy = padT + i * rowH + rowH / 2;
+      var barH = 9;
+
+      var lab = el("text", { x: labelW - 12, y: cy + 4, class: "axis-label", "text-anchor": "end" }, svg);
+      lab.textContent = r.label;
+
+      // unexposed (baseline), drawn first / behind
+      var wUn = xScale(r.rUn) - chartX0;
+      el("rect", { x: chartX0, y: cy + 3, width: Math.max(wUn, 2), height: barH, rx: 4,
+        fill: css("--ink-muted"), opacity: 0.55 }, svg);
+
+      // exposed
+      var wExp = xScale(r.rExp) - chartX0;
+      var barExp = el("rect", { x: chartX0, y: cy - 3 - barH, width: Math.max(wExp, 2), height: barH, rx: 4,
+        fill: css("--teal") }, svg);
+
+      var hit = el("rect", { x: chartX0, y: cy - rowH / 2, width: chartX1 - chartX0, height: rowH,
+        fill: "transparent", style: "cursor:pointer" }, svg);
+      function onMove(evt) {
+        buildTip(evt.clientX, evt.clientY, r.label, [
+          ["Exposed rate", pct(r.rExp) + " (n=" + r.nExp + ")"],
+          ["Unexposed rate", pct(r.rUn) + " (n=" + r.nUn.toLocaleString() + ")"]
+        ]);
+      }
+      hit.addEventListener("pointermove", onMove);
+      hit.addEventListener("pointerenter", onMove);
+      hit.addEventListener("pointerleave", hideTip);
+    });
+
+    var xAxisLabel = el("text", { x: (chartX0 + chartX1) / 2, y: H, class: "axis-label", "text-anchor": "middle" }, svg);
+    xAxisLabel.textContent = "";
+
+    var tbl = document.getElementById("abxTable");
+    var thead = "<thead><tr><th>Antibiotic class</th><th>Exposed rate</th><th>n exposed</th><th>Unexposed rate</th><th>n unexposed</th></tr></thead>";
+    var trows = rows.map(function (r) {
+      return "<tr><td>" + r.label + "</td><td>" + pct(r.rExp) + "</td><td>" + r.nExp + "</td><td>" + pct(r.rUn) + "</td><td>" + r.nUn.toLocaleString() + "</td></tr>";
+    }).join("");
+    tbl.innerHTML = thead + "<tbody>" + trows + "</tbody>";
+  }
+
+  // ================================================================ FOREST PANELS
+  function renderForestPanel(hostId, data, domainMin, domainMax) {
+    var host = document.getElementById(hostId);
+    var rowH = 30, labelW = 260, padT = 6, padR = 20;
+    var W = 1000, H = data.length * rowH + padT + 26;
+    var chartX0 = labelW, chartX1 = W - padR;
+
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, class: "chart-svg", role: "img",
+      "aria-label": "Forest plot of adjusted odds ratios" });
+    host.appendChild(svg);
+
+    function xScale(v) { return chartX0 + (v - domainMin) / (domainMax - domainMin) * (chartX1 - chartX0); }
+
+    // gridlines at round-ish steps
+    var steps = [];
+    var span = domainMax - domainMin;
+    var step = span > 2 ? 1 : span > 0.8 ? 0.25 : 0.1;
+    for (var t = Math.ceil(domainMin / step) * step; t <= domainMax; t += step) steps.push(+t.toFixed(2));
+    steps.forEach(function (t) {
+      var x = xScale(t);
+      el("line", { x1: x, x2: x, y1: padT, y2: H - 20, stroke: css("--grid"), "stroke-width": 1 }, svg);
+      var lab = el("text", { x: x, y: H - 6, class: "axis-label", "text-anchor": "middle" }, svg);
+      lab.textContent = t.toFixed(2);
+    });
+
+    // reference line at OR = 1
+    var refX = xScale(1);
+    el("line", { x1: refX, x2: refX, y1: padT, y2: H - 20, stroke: css("--ink-muted"), "stroke-width": 1.5 }, svg);
+    var refLab = el("text", { x: refX, y: padT + 10, class: "axis-label", "text-anchor": "middle" }, svg);
+    refLab.textContent = "OR = 1";
+
+    data.forEach(function (d, i) {
+      var cy = padT + 20 + i * rowH;
+      var sig = d.lo > 1 || d.hi < 1;
+      var color = !sig ? css("--ink-muted") : (d.OR > 1 ? css("--red") : css("--teal"));
+      var op = sig ? 1 : 0.55;
+
+      var lab = el("text", { x: labelW - 12, y: cy + 4, class: "axis-label", "text-anchor": "end" }, svg);
+      lab.setAttribute("fill", sig ? css("--ink") : css("--ink-muted"));
+      lab.textContent = d.label;
+
+      var xLo = xScale(Math.max(d.lo, domainMin));
+      var xHi = xScale(Math.min(d.hi, domainMax));
+      el("line", { x1: xLo, x2: xHi, y1: cy, y2: cy, stroke: color, "stroke-width": 2, opacity: op, "stroke-linecap": "round" }, svg);
+      el("circle", { cx: xScale(d.OR), cy: cy, r: 5, fill: color, opacity: op, stroke: css("--surface"), "stroke-width": 1.5 }, svg);
+
+      var hit = el("rect", { x: chartX0, y: cy - rowH / 2, width: chartX1 - chartX0, height: rowH,
+        fill: "transparent", style: "cursor:pointer" }, svg);
+      function onMove(evt) {
+        buildTip(evt.clientX, evt.clientY, d.label, [
+          ["Odds ratio", fmt2(d.OR)],
+          ["95% CI", fmt2(d.lo) + " – " + fmt2(d.hi)],
+          ["Significant", sig ? "yes" : "no"]
+        ]);
+      }
+      hit.addEventListener("pointermove", onMove);
+      hit.addEventListener("pointerenter", onMove);
+      hit.addEventListener("pointerleave", hideTip);
+    });
+  }
+
+  function renderForestTable() {
+    var tbl = document.getElementById("forestTable");
+    var thead = "<thead><tr><th>Model</th><th>Predictor</th><th>OR</th><th>95% CI low</th><th>95% CI high</th><th>Significant</th></tr></thead>";
+    function rowsFor(arm, data) {
+      return data.map(function (d) {
+        var sig = d.lo > 1 || d.hi < 1;
+        return "<tr><td>" + arm + "</td><td>" + d.label + "</td><td>" + fmt2(d.OR) + "</td><td>" + fmt2(d.lo) + "</td><td>" + fmt2(d.hi) + "</td><td>" + (sig ? "yes" : "no") + "</td></tr>";
+      }).join("");
+    }
+    tbl.innerHTML = thead + "<tbody>" + rowsFor("Environmental", FOREST_ENV) + rowsFor("Patient", FOREST_PAT) + "</tbody>";
+  }
+
+  // ================================================================ COHORT TABLE
+  function renderCohortTable() {
+    var tbl = document.getElementById("cohortTable");
+    var thead = "<thead><tr><th>Analysis</th><th>Group</th><th>n</th><th>Mean age</th><th>Mean room stay (days)</th></tr></thead>";
+    var rows = COHORT.map(function (c) {
+      return "<tr><td>" + c.arm + "</td><td>" + c.group + "</td><td>" + c.n.toLocaleString() + "</td><td>" + c.age.toFixed(1) + "</td><td>" + c.dur.toFixed(1) + "</td></tr>";
+    }).join("");
+    tbl.innerHTML = thead + "<tbody>" + rows + "</tbody>";
+  }
+
+  // ---------------------------------------------------------------- init
+  function renderAll() {
+    document.getElementById("aucChart").innerHTML = "";
+    document.getElementById("cpChart").innerHTML = "";
+    document.getElementById("abxChart").innerHTML = "";
+    document.getElementById("forestEnv").innerHTML = "";
+    document.getElementById("forestPat").innerHTML = "";
+
+    renderAucStrip();
+    renderCpChart();
+    renderAbxChart();
+    renderForestPanel("forestEnv", FOREST_ENV, 0.85, 1.20);
+    renderForestPanel("forestPat", FOREST_PAT, 0.0, 4.2);
+    renderForestTable();
+    renderCohortTable();
+  }
+
+  renderAll();
+  window.addEventListener("resize", function () {
+    clearTimeout(window.__rr);
+    window.__rr = setTimeout(renderAll, 150);
+  });
+})();
+</script>

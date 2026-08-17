@@ -24,6 +24,15 @@ patient-analysis logistic regression model controls for age and sex
 explicitly as covariates; the environmental-analysis model does not need to
 (matching already balances them).
 
+## Dashboard
+
+**[Live interactive dashboard →](https://claude.ai/code/artifact/2c83acbb-eea5-44ab-9bc5-a63d1d79a2dd)**
+(also at [reports/dashboard.html](reports/dashboard.html)) — the headline AUC
+comparison, the colonization-pressure and antibiotic-exposure charts, and the
+adjusted odds-ratio forest plot for both models, built from the aggregate
+exports in `tableau/`. A step-by-step guide for rebuilding the same views in
+Tableau Public is at [tableau/DASHBOARD_GUIDE.md](tableau/DASHBOARD_GUIDE.md).
+
 ## Data
 
 Not included in this repo — see [DATA_ACCESS.md](DATA_ACCESS.md) for why
@@ -46,7 +55,8 @@ notebooks/
   06_tableau_prep.ipynb               export aggregated tables for the dashboard
 src/                 shared helper functions imported by notebooks
 reports/figures/     exported static figures
-tableau/             Tableau-ready aggregate extracts (git-ignored if row-level)
+reports/dashboard.html  self-contained interactive dashboard (see Dashboard above)
+tableau/             aggregate CSV exports + Tableau Public build guide
 writeup/             final written summary of findings
 ```
 
