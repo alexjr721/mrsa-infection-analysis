@@ -55,3 +55,21 @@ def save_processed(df: pd.DataFrame, name: str) -> Path:
 
 def load_processed(name: str) -> pd.DataFrame:
     return pd.read_csv(PROCESSED_DIR / name)
+
+
+def drop_zero_variance(df: pd.DataFrame, cols: list, verbose: bool = True) -> list:
+    """Return `cols` minus any with zero variance in `df`.
+
+    In the MRSA subsets, some antibiotic classes (e.g. carbapenem) have no
+    exposed patients at all, which produces undefined correlations and
+    singular design matrices if left in. Drop them and say why, rather than
+    letting downstream stats calls silently emit NaN/inf.
+    """
+    kept = []
+    for c in cols:
+        if df[c].var() == 0:
+            if verbose:
+                print(f"Dropping '{c}': zero variance in this subset (no exposed cases).")
+        else:
+            kept.append(c)
+    return kept
