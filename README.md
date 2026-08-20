@@ -24,6 +24,14 @@ patient-analysis logistic regression model controls for age and sex
 explicitly as covariates; the environmental-analysis model does not need to
 (matching already balances them).
 
+## Findings
+
+Patient demographics and exposure history predict MRSA acquisition meaningfully
+better than ward colonization pressure (test AUC 0.637 vs. 0.534) — but most of
+that edge is age/sex, not the antibiotics themselves. Colonization pressure has
+a real, adjusted effect (OR 1.069, p = 0.010) that's invisible in a naive
+bivariate comparison. **[Full write-up →](writeup/findings.md)**
+
 ## Dashboard
 
 **[Live interactive dashboard →](https://claude.ai/code/artifact/2c83acbb-eea5-44ab-9bc5-a63d1d79a2dd)**
@@ -73,4 +81,4 @@ jupyter notebook
 
 Each pipeline stage is a checkpointed commit: EDA → correlation analysis →
 hypothesis testing → logistic regression (per analysis type) → model
-comparison → Tableau prep → write-up.
+comparison → dashboard → write-up.
